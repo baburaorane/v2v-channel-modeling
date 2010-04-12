@@ -1,0 +1,39 @@
+% code for the transmitter 
+% it will run in continious mode and it will stop after 10 seconds
+
+clear all;clc;close all;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 0.0. Initializaton and definition of parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Load some global definitions (packet types, etc.)
+warplab_defines
+
+% Create Socket handles and intialize nodes
+[socketHandles, packetNum] = warplab_initialize(1);
+
+%Separate the socket handles for easier access
+% The first socket handle is always the magic SYNC
+% The rest can be arranged in any combination of Tx and Rx
+udp_Sync = socketHandles(1);
+udp_Tx = socketHandles(2);
+
+
+% Define the warplab options (parameters)
+CaptOffset = 1000; %Number of noise samples per Rx capture. In [0:2^14]
+TxLength = 2^14-1000; %Length of transmission. In [0:2^14-CaptOffset]
+TransMode = 1; %Transmission mode. In [0:1] 
+               % 0: Single Transmission 
+               % 1: Continuous Transmission. Tx board will continue 
+               % transmitting the vector of samples until the user manually
+               % disables the transmitter. 
+CarrierChannel = 6; % Channel in the 2.4 GHz band. In [1:14]
+TxGainBB = 1; %Tx Baseband Gain. In [0:3]
+TxGainRF = 5; %Tx RF Gain. In [0:63]
+
+% Define the options vector; the order of options is set by the FPGA's code
+% (C code)
+optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel (TxGainRF + TxGainBB*2^16)]; 
+% Send options vector to the nodes
+warplab_setOptions(socketHandles,optionsVector);
+TxData = tra;
+

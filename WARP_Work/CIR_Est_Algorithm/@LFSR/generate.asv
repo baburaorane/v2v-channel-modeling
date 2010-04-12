@@ -1,0 +1,16 @@
+function out=generate(A,varargin)
+% [OUT,NEXTSTATE,A]=generate(A) : generate a PN sequence OUT and the next state
+% of the LFSR object NEXTSTATE and the object itself A.
+% [OUT,NEXTSTATE]=generate(A)   : generate a PN sequence OUT and the next state
+% of the LFSR object NEXTSTATE.
+% [OUT]=generate(A)             : generate a PN sequence OUT.
+
+out=A.currentstate;
+temp=A.currentstate;
+if ~isempty(varargin)
+    temp(1)=xor(varargin{1},temp(1));
+end
+temp(A.numbitsout-efpoly+1)=xor(temp(1),temp(A.numbitsout-efpoly+1));
+temp1=temp([2:A.numbitsout,1]);
+A.currentstate=temp1;
+assignin('caller',inputname(1),A);
