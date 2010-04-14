@@ -19,7 +19,7 @@ for m=1:length(generator_polynomials_book)
     generator_polynomial=cell2mat(generator_polynomials_book(m));
     PN_sequence = generate_PN_sequence(generator_polynomial);
     sequence_length=length(PN_sequence);
-    save_command=['save ','-mat ''sequence.GM',numm2str(m)];
+    save_command=['save ','-mat ''sequence',numm2str(m),'.GM ','PN_sequence',numm2str(m)];
     
     % save  the PN for the Rx (Rx will need the transmitted code to calculate
     % the correlation)

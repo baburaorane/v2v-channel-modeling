@@ -7,8 +7,7 @@ clear all;clc;close all;
 receiver_interval=inf;
 
 % polynomial to generate the PN code
-polynomial_order=9;
-polynomial=[9 4 0];
+polynomialS_book={[9 4 0],[9 6 4 3 0]};
 
 %Load some global definitions (packet types, etc.)
 warplab_defines
@@ -43,7 +42,7 @@ optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
 warplab_setOptions(socketHandles,optionsVector);
 
 %Define transmitted samples
-TxData = generate_transmitted_data(TxLength,polynomial_order,polynomial);
+TxData = generate_transmitted_data(TxLength,polynomialS_book);
 
 % Download the samples to be transmitted to the transmitter kit
 warplab_writeSMWO(udp_Tx, TxData, RADIO2_TXDATA);
