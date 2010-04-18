@@ -31,21 +31,28 @@ TransMode = 1; %Transmission mode. In [0:1]
                % transmitting the vector of samples until the user manually
                % disables the transmitter. 
 CarrierChannel = 6;   % Channel in the 2.4 GHz band. In [1:14]
-TxGainBB = 3;         %Tx Baseband Gain. In [0:3]
-TxGainRF = 40;         %Tx RF Gain. In [0:63]
+TxGainBB_2 = 3;         %Tx Baseband Gain. In [0:3]
+TxGainRF_2 = 40;         %Tx RF Gain. In [0:63]
+TxGainBB_3 = 3;         %Tx Baseband Gain. In [0:3]
+TxGainRF_3 = 40;         %Tx RF Gain. In [0:63]
 
 % Define the options vector; the order of options is set by the FPGA's code
 % (C code)
 optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
-                 (TxGainRF + TxGainBB*2^16)]; 
-% Send options vector to the nodes
+                0 0 (TxGainRF_2 + TxGainBB_2*2^16) 0 0 (TxGainRF_3 + TxGainBB_3*2^16)]; 
+
+% optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
+%                 (TxGainRF_2 + TxGainBB_2*2^16)  (TxGainRF_3 + TxGainBB_3*2^16)]; 
+            
+            % Send options vector to the nodes
 warplab_setOptions(socketHandles,optionsVector);
 
 %Define transmitted samples
 TxData = generate_transmitted_data(TxLength,polynomialS_book);
 
 % Download the samples to be transmitted to the transmitter kit
-warplab_writeSMWO(udp_Tx, TxData, RADIO2_TXDATA);
+warplab_writeSMWO(udp_Tx, TxData(1,:), RADIO2_TXDATA);
+warplab_writeSMWO(udp_Tx, TxData(2,:), RADIO3_TXDATA);
 
 
 % Prepare boards for transmission send trigger to 
@@ -53,6 +60,7 @@ warplab_writeSMWO(udp_Tx, TxData, RADIO2_TXDATA);
 
 % Enable transmitter radio path in transmitter node
 warplab_sendCmd(udp_Tx, RADIO2_TXEN, packetNum);
+warplab_sendCmd(udp_Tx, RADIO3_TXEN, packetNum);
 
 
 % Prime transmitter state machine in transmitter node. Transmitter will be 
@@ -67,6 +75,7 @@ pause(receiver_interval);
 
 % Disable the transmitter radio
 warplab_sendCmd(udp_Tx, RADIO2_TXDIS, packetNum);
+warplab_sendCmd(udp_Tx, RADIO3_TXDIS, packetNum);
 
 % Close sockets
 pnet('closeall');

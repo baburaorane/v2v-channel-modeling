@@ -17,32 +17,37 @@ udp_RxA = socketHandles(2);
 % Define the warplab options (parameters)
 CaptOffset = 1000;    %Number of noise samples per Rx capture. In [0:2^14]
 TxLength = 2^14-1000; %Length of transmission. In [0:2^14-CaptOffset]
-TransMode = 1; %Transmission mode. In [0:1] 
-               % 0: Single Transmission 
-               % 1: Continuous Transmission. Tx board will continue 
-               % transmitting the vector of samples until the user manually
-               % disables the transmitter. 
+TransMode = 1; %Transmission mode. In [0:1]
+% 0: Single Transmission
+% 1: Continuous Transmission. Tx board will continue
+% transmitting the vector of samples until the user manually
+% disables the transmitter.
 CarrierChannel = 6;   % Channel in the 2.4 GHz band. In [1:14]
-RxGainBB = 20;         %Rx Baseband Gain. In [0:31]
-RxGainRF = 1;         %Rx RF Gain. In [1:3]
+RxGainBB_2 = 21;         %Rx Baseband Gain. In [0:31]
+RxGainRF_2 = 2;         %Rx RF Gain. In [1:3]
+RxGainBB_3 = 21;         %Rx Baseband Gain. In [0:31]
+RxGainRF_3 = 2;         %Rx RF Gain. In [1:3]
+
 
 % Define the options vector; the order of options is set by the FPGA's code
 % (C code)
 optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
-                 (RxGainBB + RxGainRF*2^16)]; 
+    (RxGainBB_2 + RxGainRF_2*2^16) (RxGainBB_3 + RxGainRF_3*2^16) ];
 % Send options vector to the nodes
 warplab_setOptions(socketHandles,optionsVector);
 
 
-% Prepare boards for transmission and reception and send trigger to 
+% Prepare boards for transmission and reception and send trigger to
 % start reception (trigger is the SYNC packet)
 
 % Enable receiver radio path in receiver node
 warplab_sendCmd(udp_RxA, RADIO2_RXEN, packetNum);
+warplab_sendCmd(udp_RxA, RADIO3_RXEN, packetNum);
 
 
-% Prime receiver state machine in receiver node. Receiver will be waiting 
-% for the SYNC packet. Capture will be triggered when the receiver 
+
+% Prime receiver state machine in receiver node. Receiver will be waiting
+% for the SYNC packet. Capture will be triggered when the receiver
 % node receives the SYNC packet.
 warplab_sendCmd(udp_RxA, RX_START, packetNum);
 
@@ -54,11 +59,18 @@ warplab_sendSync(udp_Sync);
 % Read back the received samples
 [RawRxData] = warplab_readSMRO(udp_RxA, RADIO2_RXDATA, TxLength+CaptOffset);
 % Process the received samples to obtain meaningful data
-[RxData,RxOTR] = warplab_processRawRxData(RawRxData);
+[RxData(1,:),RxOTR1] = warplab_processRawRxData(RawRxData);
+[RawRxData] = warplab_readSMRO(udp_RxA, RADIO3_RXDATA, TxLength+CaptOffset);
+% Process the received samples to obtain meaningful data
+[RxData(2,:),RxOTR2] = warplab_processRawRxData(RawRxData);
+
 % Read stored RSSI data
-[RawRSSIData] = warplab_readSMRO(udp_RxA, RADIO2_RSSIDATA, (TxLength+CaptOffset)/8);
+[RawRSSIData1] = warplab_readSMRO(udp_RxA, RADIO2_RSSIDATA, (TxLength+CaptOffset)/8);
+[RawRSSIData2] = warplab_readSMRO(udp_RxA, RADIO3_RSSIDATA, (TxLength+CaptOffset)/8);
+
 % Procecss Raw RSSI data to obtain meningful RSSI values
-[RxRSSI] = warplab_processRawRSSIData(RawRSSIData);
+[RxRSSI1] = warplab_processRawRSSIData(RawRSSIData1);
+[RxRSSI2] = warplab_processRawRSSIData(RawRSSIData2);
 
 % Reset and disable the boards
 
@@ -67,29 +79,30 @@ warplab_sendCmd(udp_RxA, RX_DONEREADING, packetNum);
 
 % Disable the receiver radio
 warplab_sendCmd(udp_RxA, RADIO2_RXDIS, packetNum);
-
+warplab_sendCmd(udp_RxA, RADIO3_RXDIS, packetNum);
 % Close sockets
 pnet('closeall');
 
 % calculate the Channel Impulse Response(CIR)
-CIR=channel_cir_estimation(RxData);
+CIR=channel_cir_estimation(RxData,2,2);
+
+for m = 1 : length(CIR)
+    figure;
+    plot(abs(CIR{m}));
+    grid on;xlabel('n');ylabel('|h(n)|');
+    title('Channel Impulse Response-magnitude');
+
+    figure;
+    plot(wrapToPi(angle(CIR{m})));
+    grid on;xlabel('n');ylabel('<h(n)');
+    title('Channel Impulse Response-phase');
+end
 
 figure;
-plot(abs(CIR));
-grid on;xlabel('n');ylabel('|h(n)|');
-title('Channel Impulse Response-magnitude');
-
-figure;
-plot(wrapToPi(angle(CIR)));
-grid on;xlabel('n');ylabel('<h(n)');
-title('Channel Impulse Response-phase');
-
-
-figure;
-plot(real(RxData));
+plot(real(RxData(1,:)));
 grid on;xlabel('Rx I');
 
 figure;
-plot(imag(RxData));
+plot(real(RxData(2,:)));
 grid on;xlabel('Rx Q');
 

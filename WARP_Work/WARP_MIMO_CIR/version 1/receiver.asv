@@ -23,12 +23,13 @@ TransMode = 1; %Transmission mode. In [0:1]
                % transmitting the vector of samples until the user manually
                % disables the transmitter. 
 CarrierChannel = 6;   % Channel in the 2.4 GHz band. In [1:14]
-RxGainBB = 5;         %Rx Baseband Gain. In [0:31]
-RxGainRF = 1;         %Rx RF Gain. In [1:3]
+RxGainBB_2 = 20;         %Rx Baseband Gain. In [0:31]
+RxGainRF_2 = 1;         %Rx RF Gain. In [1:3]
 
 % Define the options vector; the order of options is set by the FPGA's code
 % (C code)
-optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel (RxGainBB + RxGainRF*2^16)]; 
+optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
+                 (RxGainBB + RxGainRF*2^16)]; 
 % Send options vector to the nodes
 warplab_setOptions(socketHandles,optionsVector);
 
@@ -75,8 +76,14 @@ CIR=channel_cir_estimation(RxData);
 
 figure;
 plot(abs(CIR));
-grid on;xlabel('delay');
-title('Channel Impulse Response');
+grid on;xlabel('n');ylabel('|h(n)|');
+title('Channel Impulse Response-magnitude');
+
+figure;
+plot(wrapToPi(angle(CIR)));
+grid on;xlabel('n');ylabel('<h(n)');
+title('Channel Impulse Response-phase');
+
 
 figure;
 plot(real(RxData));

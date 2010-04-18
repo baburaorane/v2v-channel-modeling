@@ -6,9 +6,8 @@ clear all;clc;close all;
 % the pause interval to allow for continious transmission 
 receiver_interval=inf;
 
-% 
-polynomial_order=9;
-polynomial=[9 4 0];
+% polynomial to generate the PN code
+polynomialS_book={[9 4 0],[9 6 4 3 0]};
 
 %Load some global definitions (packet types, etc.)
 warplab_defines
@@ -18,41 +17,53 @@ warplab_defines
 
 %Separate the socket handles for easier access
 % The first socket handle is always the magic SYNC
-% The rest can be arranged in any combination of Tx and Rx
+% the second socket handle is handle for the connected kit (Tx kit)
 udp_Sync = socketHandles(1);
 udp_Tx = socketHandles(2);
 
 
 % Define the warplab options (parameters)
-CaptOffset = 1000; %Number of noise samples per Rx capture. In [0:2^14]
+CaptOffset = 1000;    %Number of noise samples per Rx capture. In [0:2^14]
 TxLength = 2^14-1000; %Length of transmission. In [0:2^14-CaptOffset]
 TransMode = 1; %Transmission mode. In [0:1] 
                % 0: Single Transmission 
                % 1: Continuous Transmission. Tx board will continue 
                % transmitting the vector of samples until the user manually
                % disables the transmitter. 
-CarrierChannel = 6; % Channel in the 2.4 GHz band. In [1:14]
-TxGainBB = 1; %Tx Baseband Gain. In [0:3]
-TxGainRF = 5; %Tx RF Gain. In [0:63]
-
+CarrierChannel = 6;   % Channel in the 2.4 GHz band. In [1:14]
+TxGainBB_2 = 3;         %Tx Baseband Gain. In [0:3]
+TxGainRF_2 = 40;         %Tx RF Gain. In [0:63]
+TxGainBB_3 = 3;         %Tx Baseband Gain. In [0:3]
+TxGainRF_3 = 40;         %Tx RF Gain. In [0:63]
+RxGainBB = 0;
+RxGainRF = 0;
+TxSelect
+RxSelect
 % Define the options vector; the order of options is set by the FPGA's code
 % (C code)
-optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel (TxGainRF + TxGainBB*2^16)]; 
-% Send options vector to the nodes
+% optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
+%                 (RxGainBB + RxGainRF*2^16) (TxGainRF_2 + TxGainBB_2*2^16) (RxGainBB + RxGainRF*2^16)  (TxGainRF_3 + TxGainBB_3*2^16)]; 
+
+optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
+                (TxGainRF_2 + TxGainBB_2*2^16)  (TxGainRF_3 + TxGainBB_3*2^16)]; 
+            
+            % Send options vector to the nodes
 warplab_setOptions(socketHandles,optionsVector);
 
 %Define transmitted samples
-TxData = generate_transmitted_data(TxLength,polynomial_order,polynomial);
+TxData = generate_transmitted_data(TxLength,polynomialS_book);
 
-% Download the samples to be transmitted
-warplab_writeSMWO(udp_Tx, TxData, RADIO2_TXDATA);
+% Download the samples to be transmitted to the transmitter kit
+warplab_writeSMWO(udp_Tx, TxData(1,:), RADIO2_TXDATA);
+warplab_writeSMWO(udp_Tx, TxData(2,:), RADIO3_TXDATA);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 0.2. Prepare boards for transmission and reception and send trigger to 
-% start transmission and reception (trigger is the SYNC packet)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Prepare boards for transmission send trigger to 
+% start transmission(trigger is the SYNC packet)
+
 % Enable transmitter radio path in transmitter node
 warplab_sendCmd(udp_Tx, RADIO2_TXEN, packetNum);
+warplab_sendCmd(udp_Tx, RADIO3_TXEN, packetNum);
 
 
 % Prime transmitter state machine in transmitter node. Transmitter will be 
@@ -67,6 +78,7 @@ pause(receiver_interval);
 
 % Disable the transmitter radio
 warplab_sendCmd(udp_Tx, RADIO2_TXDIS, packetNum);
+warplab_sendCmd(udp_Tx, RADIO3_TXDIS, packetNum);
 
 % Close sockets
 pnet('closeall');

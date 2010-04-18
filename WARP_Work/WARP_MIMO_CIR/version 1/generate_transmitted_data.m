@@ -13,18 +13,17 @@
 function TxData = generate_transmitted_data(TxLength,generator_polynomials_book)
 
 TxData = zeros(length(generator_polynomials_book),TxLength);
+sequence =  cell(length(generator_polynomials_book),1);
 
 for m=1:length(generator_polynomials_book)
     
     generator_polynomial=cell2mat(generator_polynomials_book(m));
+    
     PN_sequence = generate_PN_sequence(generator_polynomial);
     sequence_length=length(PN_sequence);
-    save_command=['save ','-mat ''sequence',numm2str(m),'.GM ','PN_sequence',numm2str(m)];
     
-    % save  the PN for the Rx (Rx will need the transmitted code to calculate
-    % the correlation)
-    eval(save_command)
-    
+    sequence(m)={PN_sequence};
+        
     % guard period between transmitted samples
     % we will consider a code rate equal 1/2 to encounter for long channels
     size_guard_interval=sequence_length;
@@ -42,7 +41,7 @@ for m=1:length(generator_polynomials_book)
     
 end
 
-
+save '-mat' Sequences.GM sequence;
 % calculate the number of transmitted sequences
 % suggestion for this functio in the case of MIMO
 % pre-decide the PN codes and put it in structure format
