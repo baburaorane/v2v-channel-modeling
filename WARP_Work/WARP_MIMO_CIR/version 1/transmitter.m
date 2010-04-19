@@ -31,15 +31,16 @@ TransMode = 1; %Transmission mode. In [0:1]
                % transmitting the vector of samples until the user manually
                % disables the transmitter. 
 CarrierChannel = 6;   % Channel in the 2.4 GHz band. In [1:14]
-TxGainBB_2 = 3;         %Tx Baseband Gain. In [0:3]
+TxGainBB_2 = 1;         %Tx Baseband Gain. In [0:3]
 TxGainRF_2 = 40;         %Tx RF Gain. In [0:63]
-TxGainBB_3 = 3;         %Tx Baseband Gain. In [0:3]
+TxGainBB_3 = 1;         %Tx Baseband Gain. In [0:3]
 TxGainRF_3 = 40;         %Tx RF Gain. In [0:63]
 
 % Define the options vector; the order of options is set by the FPGA's code
 % (C code)
 optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
-                0 0 (TxGainRF_2 + TxGainBB_2*2^16) 0 0 (TxGainRF_3 + TxGainBB_3*2^16)]; 
+                (TxGainBB_2 + TxGainRF_2*2^16) (TxGainRF_2 + TxGainBB_2*2^16)...
+                (TxGainBB_2 + TxGainRF_2*2^16) (TxGainRF_3 + TxGainBB_3*2^16) 2 2]; 
 
 % optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
 %                 (TxGainRF_2 + TxGainBB_2*2^16)  (TxGainRF_3 + TxGainBB_3*2^16)]; 

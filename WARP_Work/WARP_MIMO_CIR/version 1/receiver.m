@@ -23,16 +23,17 @@ TransMode = 1; %Transmission mode. In [0:1]
 % transmitting the vector of samples until the user manually
 % disables the transmitter.
 CarrierChannel = 6;   % Channel in the 2.4 GHz band. In [1:14]
-RxGainBB_2 = 21;         %Rx Baseband Gain. In [0:31]
-RxGainRF_2 = 2;         %Rx RF Gain. In [1:3]
-RxGainBB_3 = 21;         %Rx Baseband Gain. In [0:31]
-RxGainRF_3 = 2;         %Rx RF Gain. In [1:3]
+RxGainBB_2 = 20;         %Rx Baseband Gain. In [0:31]
+RxGainRF_2 = 1;         %Rx RF Gain. In [1:3]
+RxGainBB_3 = 20;         %Rx Baseband Gain. In [0:31]
+RxGainRF_3 = 1;         %Rx RF Gain. In [1:3]
 
 
 % Define the options vector; the order of options is set by the FPGA's code
 % (C code)
 optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
-    (RxGainBB_2 + RxGainRF_2*2^16) (RxGainBB_3 + RxGainRF_3*2^16) ];
+    (RxGainBB_2 + RxGainRF_2*(2^16)) (RxGainRF_2 + RxGainBB_2*(2^16)) (RxGainBB_2 + RxGainRF_2*(2^16)) ...
+    (RxGainRF_2 + RxGainBB_2*(2^16))  2 2];
 % Send options vector to the nodes
 warplab_setOptions(socketHandles,optionsVector);
 
