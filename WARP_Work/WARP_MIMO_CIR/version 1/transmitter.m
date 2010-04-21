@@ -5,9 +5,11 @@ clear all;clc;close all;
 
 % the pause interval to allow for continious transmission 
 receiver_interval=inf;
+overlap_samples = 15;
 
 % polynomial to generate the PN code
 polynomialS_book={[9 4 0],[9 6 4 3 0]};
+polynomial_order = 9;
 
 %Load some global definitions (packet types, etc.)
 warplab_defines
@@ -50,6 +52,8 @@ warplab_setOptions(socketHandles,optionsVector);
 
 %Define transmitted samples
 TxData = generate_transmitted_data(TxLength,polynomialS_book);
+TxData = format_transmitted_data(TxData,TxLength,'interleaving',polynomial_order,overlap_samples);
+figure;plot(TxData(1,:));hold all;plot(TxData(2,:));
 
 % Download the samples to be transmitted to the transmitter kit
 warplab_writeSMWO(udp_Tx, TxData(1,:), RADIO2_TXDATA);

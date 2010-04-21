@@ -38,7 +38,7 @@ TxGainRF = 40;         %Tx RF Gain. In [0:63]
 % Define the options vector; the order of options is set by the FPGA's code
 % (C code)
 optionsVector = [CaptOffset TxLength-1 TransMode CarrierChannel ...
-                 0 0 (TxGainRF + TxGainBB*2^16)]; 
+                 (TxGainBB + TxGainRF*2^16) (TxGainRF + TxGainBB*2^16)]; 
 % Send options vector to the nodes
 warplab_setOptions(socketHandles,optionsVector);
 

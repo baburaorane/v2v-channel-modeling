@@ -58,12 +58,15 @@ warplab_sendSync(udp_Sync);
 % Read the received smaples from the Warp board
 
 % Read back the received samples
-[RawRxData] = warplab_readSMRO(udp_RxA, RADIO2_RXDATA, TxLength+CaptOffset);
+tic
+[RawRxData1] = warplab_readSMRO(udp_RxA, RADIO2_RXDATA, TxLength+CaptOffset);
 % Process the received samples to obtain meaningful data
-[RxData(1,:),RxOTR1] = warplab_processRawRxData(RawRxData);
-[RawRxData] = warplab_readSMRO(udp_RxA, RADIO3_RXDATA, TxLength+CaptOffset);
+[RawRxData2] = warplab_readSMRO(udp_RxA, RADIO3_RXDATA, TxLength+CaptOffset);
+toc
 % Process the received samples to obtain meaningful data
-[RxData(2,:),RxOTR2] = warplab_processRawRxData(RawRxData);
+[RxData(1,:),RxOTR1] = warplab_processRawRxData(RawRxData1);
+
+[RxData(2,:),RxOTR2] = warplab_processRawRxData(RawRxData2);
 
 % Read stored RSSI data
 [RawRSSIData1] = warplab_readSMRO(udp_RxA, RADIO2_RSSIDATA, (TxLength+CaptOffset)/8);
