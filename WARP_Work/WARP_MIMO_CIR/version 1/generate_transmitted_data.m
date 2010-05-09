@@ -36,12 +36,15 @@ for m=1:length(generator_polynomials_book)
     sequence_guard=[PN_sequence; zeros(size_guard_interval,1)];
     sequence_guard_mat = repmat(sequence_guard,1,number_sequences);
     
+    cycle_length = length(sequence_guard);
+    
     useful_samples = reshape(sequence_guard_mat,1,[]);
     TxData(m,:) = [useful_samples, zeros(1,size_garbage_samples)];
     
 end
 
 save '-mat' Sequences.GM sequence;
+save '-mat' CycleSize.GM cycle_length;
 % calculate the number of transmitted sequences
 % suggestion for this functio in the case of MIMO
 % pre-decide the PN codes and put it in structure format

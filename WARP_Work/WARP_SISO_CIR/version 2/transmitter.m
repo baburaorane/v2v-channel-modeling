@@ -4,7 +4,7 @@
 clear all;clc;close all;
 
 % the pause interval to allow for continious transmission 
-receiver_interval=inf;
+receiver_interval=2;
 
 % polynomial to generate the PN code
 polynomial_order=9;
@@ -26,7 +26,7 @@ udp_Tx = socketHandles(2);
 % Define the warplab options (parameters)
 CaptOffset = 1000;    %Number of noise samples per Rx capture. In [0:2^14]
 TxLength = 2^14-1000; %Length of transmission. In [0:2^14-CaptOffset]
-TxMode = 1; %Transmission mode. In [0:1] 
+TxMode = 0; %Transmission mode. In [0:1] 
                % 0: Single Transmission 
                % 1: Continuous Transmission. Tx board will continue 
                % transmitting the vector of samples until the user manually

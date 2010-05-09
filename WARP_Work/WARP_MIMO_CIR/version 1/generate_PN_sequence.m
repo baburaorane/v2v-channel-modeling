@@ -1,5 +1,6 @@
 function PN_sequence = generate_PN_sequence(generator_polynomial)
 
+global sequence_length;
 polynomial_order = max(generator_polynomial);
 
 % length of the PN code (2^n-1)

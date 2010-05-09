@@ -31,7 +31,7 @@ TransMode = 1; %Transmission mode. In [0:1]
                % 1: Continuous Transmission. Tx board will continue 
                % transmitting the vector of samples until the user manually
                % disables the transmitter. 
-CarrierChannel = 11;   % Channel in the 2.4 GHz band. In [1:14]
+CarrierChannel = 5805;   % Channel in the 2.4 GHz band. In [1:14]
 TxGainBB = 3;         %Tx Baseband Gain. In [0:3]
 TxGainRF = 40;         %Tx RF Gain. In [0:63]
 
